@@ -1,0 +1,144 @@
+Git学习资料
+
+安装完git，使用git --version检查安装完成及版本
+
+一、初始化
+1、初始化git目录：在文件夹下打开git bash, 执行 git init 命令初始化;
+2、设置git用户名和邮箱地址
+   git config --global user.name "pf"
+   git config --global user.email pf@qq.com
+   git --list
+
+二、区域
+1、工作区
+2、暂存区
+3、版本库
+
+
+三、对象
+1、Git对象(blob)
+	git init // 初始化git仓库 .git文件就是当前文件夹的仓库
+	// .git文件夹介绍：
+	hooks: 		目录包含客户端或服务器的钩子脚本
+	info: 		包含一个全局性排除文件
+	logs: 		保存日志信息
+*	objects:	目录存储所有数据内容
+*	refs:		目录存储指向数据（分支）的提交对象的指针
+	config: 	文件包含项目特有的配置选项
+	description:用来显示对仓库的描述信息
+*	HEAD:		文件指示目前被检出的分支
+*	index:		文件保存暂存区信息
+
+	key:val 组成的键值对（key是val的哈希值）
+2、树对象(tree) 版本快照
+	查看暂存区文件： git ls-files -s
+3、提交对象(commit) 项目的版本
+
+
+git操作基本流程：
+	创建工作目录 对工作目录进行修改
+	git add ./   // 将工作目录下修改的文件，用git hash-object在版本库中生成git对象，
+				 //	用git update-index命令将版本库中的git对象同步到暂存区 
+		git hash-object -w 文件名（修改了多少个工作目录中的文件 此命令就要被执行多少次）
+		git update-index ...
+	git commit -m "注释内容"  
+		git write-tree		// 生成树对象
+		git commit-tree     // 生成提交对象
+
+git底层命令
+	git(blob)对象
+		git hash-object -w filePath : 生成一个key(hash值):val(压缩后的文件内容)键值对存到.git/objects
+	tree对象
+		git update-index --add --cacheinfo 100644 hash test.txt : 往暂存区添加一条记录（让git对象 对应 上文件名）存到.git/index
+		git write-tree ： 生成树对象存到.git/objects
+	commit对象
+		echo 'first commit' | git commit-tree treehash : 生成一个提交对象存到.git/objects
+	对以上对象的查询
+		git cat-file -p hash 	: 查看对应对象的内容
+		git cat-file -t hash 	: 查看对应对象的类型
+	查看暂存区
+		git ls-files -s
+
+git高层命令 （增删改查）
+	git init 					初始化仓库
+	git status 					查看文件状态
+	git diff                	查看那些修改还没有暂存
+	git diff --staged/cached 	查看那些修改以及被暂存了 还没有提交
+	git log 					查看历史提交详细记录
+	git log --pretty=oneline    查看历史提交记录 key:提交注释
+	git log --oneline 			查看历史提交记录 短key:提交注释
+	git log --oneline --decorate --graph --all : 查看整个项目的分支记录
+	git add ./					将修改添加到暂存区
+	git rm 文件名 				删除工作目录中对应的文件 再将修改添加到暂存区
+	git mv 源文件名 新文件名 		将工作目录中的文件进行重命名 再将修改添加到暂存区
+	git commit 					提交后面可以写长篇注释
+	git commit -am "注释"		跳过暂存区提交到版本库（第一次新增文件不可这样使用）
+	git commit -m "注释"			将暂存区提交到版本库
+
+git高层命令(分支)
+	分支的本质其实就是一个提交对象
+	HEAD:是一个指针 它默认指向master分支 切换分支时其实就是让HEAD指向不同的分支
+		 每次有新的提交时 HEAD都会带着当前指向的分支 一起往前移动
+	git branch 					显示分支列表
+	git branch -v 				查看分支指向的最新提交
+	git branch 分支名			在当前提交对象上创建分支
+	git branch 分支名 hash值		创建指定提交日志处的分支
+	git checkout 分支名 			切换分支
+	git checkout -b 分支名 		创建分支并且切换至该分支
+	git branch -d 分支名 		删除空的分支 删除已经被合并的分支
+	git branch -D 分支名 		强制删除分支
+
+切分支：
+	最佳实践：每次切换分支前 当前分支一定得是干净的(已提交状态)
+	坑： 在切换分支时，如果当前分支上有未暂存的修改（第一次）或者有未提交的暂存（第一次）
+			分支可以切换成功，但是这种操作可能会污染其他分支
+	动三个地方：
+		HEAD
+		暂存区
+		工作目录
+
+后悔药：
+	工作区
+		如何撤回自己在工作目录中的修改：git checkout --filename
+	暂存区
+		如何撤回自己的暂存：git reset HEAD filename
+	版本库
+		如何撤回自己的提交: 修改提交日志 git commit --amend
+
+reset详解：
+	git log 	: 只记录当前分支的日志记录
+	git reflog 	: 只要是HEAD有变化 那么git reflog就会记录下来
+
+	三部曲：
+		第一部： git reset --soft HEAD~  （--amend）
+			只动HEAD（带着分支一起移动）
+		第二部： git reset [--mixed] HEAD~
+			动HEAD(带着分支一起移动)
+			动了暂存区
+		第三部： git reset --hard HEAD 	 (checkout)
+			动了HEAD（带着分支一起移动）
+			动了暂存区
+			动了工作目录
+checkout：
+	git checkout commithash 和git reset --hard commithash区别
+		1、checkout只动HEAD 			--hard动了HEAD而且带着分支一起走
+		2、checkout对工作目录是安全的 --hard是强制覆盖工作目录
+	git checkout --filename 相比于git reset --hard commithash 只动了工作目录， 不会动HEAD，暂存区
+
+	git checkout commithash <file>
+		将会跳过动head
+		更新了暂存区
+		更新了工作目录 	
+
+
+路径reset
+	git reset [--mixed] HEAD filename 	（reset 将会跳过第一步）
+	只动了暂存区
+
+
+tag标签操作：
+	git tag v1.0 			// 打标签
+	git show v1.0   		// 查看标签
+	git tag -d v1.0 		// 删除标签
+	git checkout -b "v1.0" 	// 检出标签 v1.0分支名
+
