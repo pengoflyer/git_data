@@ -142,3 +142,4 @@ tag标签操作：
 	git tag -d v1.0 		// 删除标签
 	git checkout -b "v1.0" 	// 检出标签 v1.0分支名
 
+git远程仓库操作：
