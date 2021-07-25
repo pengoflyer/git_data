@@ -143,4 +143,5 @@ tag标签操作：
 	git checkout -b "v1.0" 	// 检出标签 v1.0分支名
 
 git远程仓库操作：
-	git remote -v 			// 查看远程分支别名
+	git remote -v 					// 查看远程分支别名
+	git remote add 远程分支地址		// 映射远程分支
