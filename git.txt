@@ -5,9 +5,9 @@ Git学习资料
 一、初始化
 1、初始化git目录：在文件夹下打开git bash, 执行 git init 命令初始化;
 2、设置git用户名和邮箱地址
-   git config --global user.name "pf"
-   git config --global user.email pf@qq.com
-   git --list
+   git config --global user.name "pf"			// 添加全局用户
+   git config --global user.email pf@qq.com   	// 添加全局用户邮箱
+   git config --list							// 查看配置列表
 
 二、区域
 1、工作区
