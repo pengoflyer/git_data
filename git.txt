@@ -145,3 +145,6 @@ tag标签操作：
 git远程仓库操作：
 	git remote -v 					// 查看远程分支别名
 	git remote add 远程分支地址		// 映射远程分支
+
+	git branch -u 远程分支别名 		// 目的是可以直接使用git push/pull 后不跟别名和分支名
+	
